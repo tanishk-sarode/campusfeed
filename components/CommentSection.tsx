@@ -36,7 +36,7 @@ export default function CommentSection({ post, currentUserId, onUpdate }: Commen
         replies: []
       }
 
-      const updatedComments = [...post.comments, comment]
+  const updatedComments = [...(post.comments || []), comment]
       onUpdate(post.id, { comments: updatedComments })
       setNewComment('')
       toast.success('Comment added!')
@@ -64,7 +64,7 @@ export default function CommentSection({ post, currentUserId, onUpdate }: Commen
         parentId: parentCommentId
       }
 
-      const updatedComments = post.comments.map(comment => {
+  const updatedComments = (post.comments || []).map(comment => {
         if (comment.id === parentCommentId) {
           return { ...comment, replies: [...comment.replies, reply] }
         }
@@ -89,7 +89,7 @@ export default function CommentSection({ post, currentUserId, onUpdate }: Commen
     
     if (isReply) {
       // Handle reply reactions
-      const updatedComments = post.comments.map(comment => {
+  const updatedComments = (post.comments || []).map(comment => {
         if (comment.id === targetId) {
           const newCommentReactions = { ...comment.reactions }
           if (hasReacted) {
@@ -121,7 +121,7 @@ export default function CommentSection({ post, currentUserId, onUpdate }: Commen
       onUpdate(post.id, { comments: updatedComments })
     } else {
       // Handle comment reactions
-      const updatedComments = post.comments.map(comment => {
+  const updatedComments = (post.comments || []).map(comment => {
         if (comment.id === targetId) {
           const newCommentReactions = { ...comment.reactions }
           if (hasReacted) {
@@ -141,13 +141,13 @@ export default function CommentSection({ post, currentUserId, onUpdate }: Commen
 
   const deleteComment = (commentId: string, isReply = false) => {
     if (isReply) {
-      const updatedComments = post.comments.map(comment => ({
+  const updatedComments = (post.comments || []).map(comment => ({
         ...comment,
         replies: comment.replies.filter(reply => reply.id !== commentId)
       }))
       onUpdate(post.id, { comments: updatedComments })
     } else {
-      const updatedComments = post.comments.filter(comment => comment.id !== commentId)
+  const updatedComments = (post.comments || []).filter(comment => comment.id !== commentId)
       onUpdate(post.id, { comments: updatedComments })
     }
     toast.success('Comment deleted')
@@ -322,13 +322,13 @@ export default function CommentSection({ post, currentUserId, onUpdate }: Commen
 
       {/* Comments List */}
       <div className="p-4">
-        {post.comments.length === 0 ? (
+  {(post.comments || []).length === 0 ? (
           <div className="text-center py-6">
             <p className="text-gray-500 text-sm">No comments yet. Be the first to comment!</p>
           </div>
         ) : (
           <div className="space-y-2">
-            {post.comments.map((comment) => (
+            {(post.comments || []).map((comment) => (
               <CommentItem key={comment.id} comment={comment} />
             ))}
           </div>

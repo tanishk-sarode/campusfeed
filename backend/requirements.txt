@@ -1,0 +1,11 @@
+Flask==3.0.2
+Flask-Cors==4.0.0
+Flask-Migrate==4.0.5
+SQLAlchemy==2.0.31
+psycopg2-binary==2.9.9
+PyMySQL==1.1.1
+python-dotenv==1.0.1
+Werkzeug==3.0.3
+openai==1.42.0
+Pillow==10.4.0
+cryptography

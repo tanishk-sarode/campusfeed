@@ -45,3 +45,17 @@ coverage/
 # Jest
 jest-cache/
 jest-test-results.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+ENV/
+*.db
+*.sqlite3
+
+# Uploads and local data
+uploads/

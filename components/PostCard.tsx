@@ -114,8 +114,8 @@ export default function PostCard({ post, currentUserId, onUpdate, onDelete }: Po
     }
   }
 
-  const totalReactions = Object.values(post.reactions).reduce((sum, count) => sum + count, 0)
-  const totalComments = post.comments.reduce((sum, comment) => sum + 1 + comment.replies.length, 0)
+  const totalReactions = Object.values(post.reactions || {}).reduce((sum, count) => sum + count, 0)
+  const totalComments = (post.comments || []).reduce((sum, comment) => sum + 1 + (comment.replies ? comment.replies.length : 0), 0)
 
   return (
     <motion.div
@@ -241,20 +241,23 @@ export default function PostCard({ post, currentUserId, onUpdate, onDelete }: Po
               <div className="flex items-center space-x-2">
                 <span className="text-xs text-gray-500">
                   <Users className="w-3 h-3 inline mr-1" />
-                  {post.responses.going + post.responses.interested + post.responses.not_going} responses
+                  {(() => {
+                    const responses = post.responses || { going: 0, interested: 0, not_going: 0 }
+                    return responses.going + responses.interested + responses.not_going
+                  })()} responses
                 </span>
               </div>
             </div>
             <div className="flex space-x-2 mt-2">
               {(['going', 'interested', 'not_going'] as EventResponse[]).map((response) => {
-                const count = post.responses[response]
+                const responses = post.responses || { going: 0, interested: 0, not_going: 0 }
+                const count = responses[response]
                 const isSelected = getUserEventResponse(post.id) === response
                 const colors = {
                   going: 'bg-green-100 text-green-700 hover:bg-green-200',
                   interested: 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200',
                   not_going: 'bg-red-100 text-red-700 hover:bg-red-200'
                 }
-                
                 return (
                   <button
                     key={response}
@@ -279,9 +282,9 @@ export default function PostCard({ post, currentUserId, onUpdate, onDelete }: Po
             {/* Reactions */}
             <div className="flex items-center space-x-1">
               {(['👍', '❤️', '🔥', '😮', '🤔', '😢'] as ReactionType[]).map((reaction) => {
-                const count = post.reactions[reaction] || 0
+                const reactions = post.reactions || {}
+                const count = reactions[reaction] || 0
                 const isReacted = hasUserReacted(post.id, reaction)
-                
                 return (
                   <button
                     key={reaction}

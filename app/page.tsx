@@ -6,10 +6,10 @@ import SmartPostCreator from '@/components/SmartPostCreator'
 import Feed from '@/components/Feed'
 import { Post, PostType } from '@/types/post'
 import { generateUserId } from '@/utils/user'
-import { samplePosts } from '@/data/sampleData'
+import { fetchPosts, createPost as createPostApi } from '@/lib/api'
 
 export default function HomePage() {
-  const [posts, setPosts] = useState<Post[]>(samplePosts)
+  const [posts, setPosts] = useState<Post[]>([])
   const [currentFilter, setCurrentFilter] = useState<PostType | 'all'>('all')
   const [userId] = useState(() => generateUserId())
 
@@ -17,8 +17,30 @@ export default function HomePage() {
     ? posts 
     : posts.filter(post => post.type === currentFilter)
 
-  const addPost = (newPost: Post) => {
-    setPosts(prev => [newPost, ...prev])
+  const addPost = async (newPost: Post) => {
+    // Map frontend post to backend format
+    const backendPayload: any = {
+      type: newPost.type,
+      title: newPost.title,
+      description: newPost.description,
+      authorSession: userId,
+      timestamp: newPost.timestamp || new Date().toISOString(),
+      location: (newPost as any).location,
+      date: (newPost as any).date,
+      time: (newPost as any).time,
+      department: (newPost as any).department,
+      itemType: (newPost as any).itemType,
+      itemName: (newPost as any).itemName,
+      imageUrl: (newPost as any).imageUrl,
+      attachmentUrl: (newPost as any).attachmentUrl,
+    }
+    try {
+      const created = await createPostApi(backendPayload)
+      setPosts(prev => [created, ...prev])
+    } catch (e) {
+      // fallback: add locally if backend fails
+      setPosts(prev => [newPost, ...prev])
+    }
   }
 
   const updatePost = (postId: string, updates: Partial<Post>) => {
@@ -31,6 +53,10 @@ export default function HomePage() {
     setPosts(prev => prev.filter(post => post.id !== postId))
   }
 
+  useEffect(() => {
+    fetchPosts().then(setPosts).catch(() => setPosts([]))
+  }, [])
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header 
@@ -38,14 +64,12 @@ export default function HomePage() {
         currentFilter={currentFilter}
         onFilterChange={setCurrentFilter}
       />
-      
       <main className="container mx-auto px-4 py-6 max-w-4xl">
         <div className="space-y-6">
           <SmartPostCreator 
             onPostCreated={addPost}
             userId={userId}
           />
-          
           <Feed 
             posts={filteredPosts}
             currentUserId={userId}
