@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+
+# Builds
+.next/
+out/
+.next-static/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Env files
+.env
+.env.*
+!.env.example
+.env.local
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Misc
+coverage/
+*.pem
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# TypeScript
+*.tsbuildinfo
+
+# VerceI
+.vercel/
+
+# Netlify
+.netlify/
+
+# Jest
+jest-cache/
+jest-test-results.json
