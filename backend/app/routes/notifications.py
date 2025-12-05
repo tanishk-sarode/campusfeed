@@ -8,7 +8,7 @@ notifications_bp = Blueprint("notifications", __name__)
 
 @notifications_bp.get("")
 @login_required
-@limiter.limit("60/hour")
+@limiter.limit("300/minute")
 def list_notifications():
     """Get current user's notifications"""
     notifications = Notification.query.filter_by(user_id=current_user.id)\
@@ -35,7 +35,7 @@ def list_notifications():
 
 @notifications_bp.post("/<int:notification_id>/read")
 @login_required
-@limiter.limit("60/hour")
+@limiter.limit("300/minute")
 def mark_as_read(notification_id):
     """Mark notification as read"""
     notification = db.session.get(Notification, notification_id)
@@ -52,7 +52,7 @@ def mark_as_read(notification_id):
 
 @notifications_bp.post("/read-all")
 @login_required
-@limiter.limit("60/hour")
+@limiter.limit("100/minute")
 def mark_all_as_read():
     """Mark all notifications as read"""
     Notification.query.filter_by(user_id=current_user.id, is_read=False)\
@@ -63,7 +63,7 @@ def mark_all_as_read():
 
 @notifications_bp.get("/unread-count")
 @login_required
-@limiter.limit("60/hour")
+@limiter.limit("300/minute")
 def get_unread_count():
     """Get count of unread notifications"""
     count = Notification.query.filter_by(

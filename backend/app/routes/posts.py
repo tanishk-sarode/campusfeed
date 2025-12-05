@@ -11,18 +11,21 @@ from bleach import clean
 posts_bp = Blueprint("posts", __name__)
 
 @posts_bp.get("")
-@limiter.limit("60/hour")
+@limiter.limit("300/minute")
 def list_posts():
     category = request.args.get("category")
     search = request.args.get("search", "").strip()
     sort = request.args.get("sort", "newest")  # newest, popular
-    
+    page = int(request.args.get("page", 1))
+    limit = int(request.args.get("limit", 20))
+    offset = (page - 1) * limit
+
     q = Post.query.filter_by(is_deleted=False)
-    
+
     # Filter by category
     if category:
         q = q.filter_by(category=category)
-    
+
     # Search in title and content
     if search:
         search_pattern = f"%{search}%"
@@ -32,22 +35,23 @@ def list_posts():
                 Post.content_md.ilike(search_pattern)
             )
         )
-    
+
     # Sort
     if sort == "popular":
-        # Join with reactions and count, then order by count descending
         q = q.outerjoin(Reaction, (Reaction.post_id == Post.id) & (Reaction.comment_id == None))
         q = q.group_by(Post.id)
         q = q.order_by(func.count(Reaction.id).desc(), Post.created_at.desc())
-    else:  # newest
+    else:
         q = q.order_by(Post.created_at.desc())
+
+    total = q.count()
+    q = q.offset(offset).limit(limit)
     
-    q = q.limit(50)
-    
-    # Join with user to get author names
     posts = []
     for p in q.all():
         user = db.session.get(User, p.user_id)
+        media = Media.query.filter_by(post_id=p.id, type="image").all()
+        preview_url = media[0].url if media else None
         posts.append({
             "id": p.id,
             "title": p.title,
@@ -56,9 +60,10 @@ def list_posts():
             "user_name": user.name if user else "Unknown",
             "created_at": p.created_at.isoformat(),
             "edited_at": p.edited_at.isoformat() if p.edited_at else None,
+            "cover_url": preview_url,
         })
-    
-    return jsonify({"posts": posts})
+
+    return jsonify({"posts": posts, "total": total, "page": page, "limit": limit})
 
 @posts_bp.post("")
 @login_required
